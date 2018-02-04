@@ -1,0 +1,1 @@
+json.extract! @expense, :id, :amount_value, :note, :category, :account
