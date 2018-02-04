@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  amount: one
+  note: MyText
+  date: 2018-02-04
+  category: one
+  account: one
+
+two:
+  amount: two
+  note: MyText
+  date: 2018-02-04
+  category: two
+  account: two
