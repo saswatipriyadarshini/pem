@@ -1,4 +1,5 @@
 class AccountsController < ApplicationController
+  before_action :set_default_response_format
   def index
     @accounts = Account.all
   end
@@ -32,5 +33,9 @@ class AccountsController < ApplicationController
   private
   def account_params
     params.require(:account).permit(:name)
+  end
+
+  def set_default_response_format
+    request.format = :json
   end
 end

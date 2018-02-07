@@ -1,4 +1,6 @@
 class CategoriesController < ApplicationController
+
+  before_action :set_default_response_format
   def index
     @categories = Category.all
   end
@@ -32,5 +34,9 @@ class CategoriesController < ApplicationController
 
   def category_params
     params.require(:category).permit(:name)
+  end
+
+  def set_default_response_format
+    request.format = :json
   end
 end

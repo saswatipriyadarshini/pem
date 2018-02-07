@@ -1,0 +1,211 @@
+
+<div class="row">
+	<div class="col-xs-3">
+		<h3>Expense</h3>
+	</div>
+	<div class="col-xs-3">
+		<button class='btn btn-sm btn-primary' data-target="#modal-create-expense" data-toggle="modal">Create Expense</button>
+	</div>
+</div>
+<div id="expenses"></div>
+
+<!-- bootstrap modal which will hold a form to create anew expense
+code for createing bootstrap obviously ou'll find on bootstrap website
+expense[amount_attributes][value] these things you remember from postman
+now submitting the form inside the modal will not create expense, as nothing is setup,
+it will simply reload the page and the url will be populated with the data we input
+forcus on the url when i submit hte form
+
+since category and accounts can't be populated as dropdowns as of now, we'll hard code the value
+
+we'll write javascript to prevent the form submission and we'll do it via ajax,
+ -->
+
+<div id="modal-create-expense" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close">x</button>
+				<h4>Create New Expense</h4>
+			</div>
+			<div class="modal-body">
+				<form id="form-create-expense">
+					<div class="form-group">
+						<label class="control-label">Expense Amount</label>
+						<input type="text" class="form-control" name="expense[amount_attributes][value]" />
+					</div>
+					<div class="form-group">
+						<label class="control-label">Expense Note</label>
+						<input type="text" class="form-control" name="expense[note]" />
+					</div>
+					<div class="form-group">
+						<label class="control-label">Expense Date</label>
+						<input type="text" class="form-control" name="expense[date]" />
+					</div>
+					<div class="form-group">
+						<label class="control-label">Expense Category ID</label>
+						<input type="text" class="form-control" name="expense[category_id]" value="2"/>
+					</div>
+					<div class="form-group">
+						<label class="control-label">Expense Account ID</label>
+						<input type="text" class="form-control" name="expense[account_id]" value="3"/>
+					</div>
+
+					<div class="form-group">
+						<button class="btn btn-success">Create</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+</div>
+
+<script type="text/javascript">
+	
+	// Steps involved
+	/* 
+		1. Make ajax request to get all expense and console.log
+				// Do you understand step 1? Liza, this is the time, you can not lie to me, or you'll regret a lifetime
+				//Fine. i ahve a little doubt in the success function . the for loop. This is pretty basic, but do clear
+				// whatever you have. askWait. No I understood. Liza, can you talk? no
+				 I git the basic idea. I understood. 
+		2. After getting data, we'll just find the div with id expense and insert the expense as a html element by creating it
+
+
+		3. Prevent form submission, get formdata and send it to server via ajax
+
+	*/
+
+
+	//Step 1.
+	// Store div#expenses in a variable
+	var div_expenses = $("#expenses");
+	function getExpenses(){
+		
+		$.ajax({
+			url: '/expenses', // Since everything is done from same app we need not write localhost:3000/expenses, although you can use it
+			dataType: "JSON",
+			type: "GET", // Default is always get so need not write this line, but just to let you know
+			success: function(response_received){
+				$(div_expenses).html(""); //cleared
+				//console.log(response_received); 
+				//console.log("Expense categories are");
+				for(var i = 0; i < response_received.length; i++){
+					expense = response_received[i];
+
+					//after getting the expense obejct inside the loop, we'll simply pass it the function and that will take care of it
+					createAndAppendExpense(expense);
+				}
+			}
+		})
+	}
+
+	//after declaring the function we have to execute it, so it is loaded the first time
+	// Now if i reload the page, we'll not see shit becuase the function has been defined but never called, hence nothing inside the function is executed
+
+	getExpenses(); // Executed , now we'll see
+
+	// can you tell why its happening?That's not a global variable
+	// So that is inside the scope of funciton but is also used outside
+	// so what will be the quickest solution?
+	// Very good
+
+	// 
+
+
+
+	
+	function createAndAppendExpense(expense){
+		// Create an string from expense object which is actually the first lemetn in the array we received
+				// So this is not working out we need to creat an html element in jquery
+				expense_wrapper = $("<div />", {
+					class: 'expense'
+				});
+				//above is way to create a html object in jquery, you can find the dsoc on jquery page, nothing to remember, we used to google this shit when we nneded it.
+
+				amount_wrapper = "<b>" + expense.amount_value + "</b><br />";
+
+				expense_category_wrapper = "<div>" + expense.category_name + "</div>";
+
+				$(expense_wrapper).append(amount_wrapper);
+				$(expense_wrapper).append(expense_category_wrapper);
+
+
+				$(div_expenses).append(expense_wrapper);
+
+
+				//lets spice things up
+
+
+				// Append it to the div
+
+				//Since we are inside loop, this will be executed twice, and we'll see 2 amounts inside the div
+
+				// Now we can add other things as well, like category, account etc. 
+				// But wouldn't it be nicer to separate the logic of creating an element and appending it to the the dom from the logic of fetch data?
+				// So this is aproper use of a function
+				//We'll create a function, which will do all this thing, and we'll simply pass expense object into it.
+
+				// here you can add a lot of logic to display other shit.
+				// Let me install bootstrap
+			}
+
+
+  $("#form-create-expense").on('submit', function(e){
+  	e.preventDefault(); // this will prevent the defautl action of an event
+
+  	form = e.currentTarget; // this will get the current target of the even in our case it is the form which holds all the data use has input
+
+  	formData = new FormData(form); // passing a form into formdata will extract all the values , this is a javascript thing and not jquery's hence can be used acrooss 
+
+  	$.ajax({
+  		url: '/expenses', // one api to rule them all:)
+  		type: "POST", // type has to be post for creation, RESTful
+  		data: formData,
+  		dataType: 'JSON',
+  		contentType: false,
+  		processData: false,
+  		cache: false, // the above three lines you hae use anytime you're using js's formdata object, 'ghosi de'
+  		success: function(response){
+  			console.log("REsponse");
+  			// so if resosne has an `id` key inside of it,that means expense has been created
+  			// it will be nicer to close the modal and rerender the page, or that we'll have to move ajax thing for fetching all expenses in side an function
+  			if(response.id){
+  				// so we can put it here or we can put it inside the getExpense method, so anytime it gets data, firstt it clears the div and then does it
+  				getExpenses();
+  				// here we can call the same function to refetch all the data, but that will cause one more issue we'll see
+  				// Can you guess what other issue it will create?NO
+  				// It will append the newly fetched expenses(all of it) after the previous list
+
+  				// Spo whata is the solution?I have to guess. do You tell for nowwait
+  				//we can create a different function. Ask it to fetch onlt the currentt one. 
+  				// no dumbo, simply clear the data of div#expense
+  				// Also we need to close the modal,
+  				$("#modal-create-expense").modal('hide');
+  				//alert("Successfully Created Expense");
+  			}
+  		}
+  	})
+  });
+
+
+  // Now you can add new styles, and do a bunch of other things to improve it
+  // Like fetching data for categories before displaying themodal to show a dropdown instead of user entering id of it manually etc.
+  // Create different pages for categories where it works the same way, as well as for account ect
+  // Now all these things can be done using angular very easiely and in amore fancier fashion
+  //Let me ruy with angular, for now you 
+  // I gotta sleeep
+  //Goodnight
+  
+
+</script>
+
+<style type="text/css">
+	.expense{
+		border: 1px solid #eee;
+		padding: 15px;
+		margin: 15px;
+		background-color: #fafafa;
+	}
+</style>
